@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import br.com.acjn.importacao.exception.ImportacaoException;
+import br.com.acjn.importacao.vo.ImportacaoVO;
 
 /**
  * Essa classe serve para impotar aquivos TXT Importacao
@@ -24,45 +25,24 @@ public class ImportacaoTXT implements Importacao {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 
 	private static final long serialVersionUID = 1L;
-	private String delimitador;
-	private String qualificador;
-
-	public String getDelimitador() {
-		return delimitador;
-	}
-
-	public void setDelimitador(String delimitador) {
-		this.delimitador = delimitador;
-	}
-
-	public String getQualificador() {
-		return qualificador;
-	}
-
-	public void setQualificador(String qualificador) {
-		this.qualificador = qualificador;
-	}
 
 	/**
 	 * Le linha por linha e transforma em tabela
 	 * 
 	 * @throws ImportacaoException
 	 */
-	public Map<Integer, List<String>> obtemDadosArquivo(String caminhoArquivo) throws ImportacaoException {
+	public Map<Integer, List<String>> obtemDadosArquivo(ImportacaoVO importacaoVO) throws ImportacaoException {
 		BufferedReader br = null;
 		FileReader fr = null;
 		Map<Integer, List<String>> mapa = new HashMap<Integer, List<String>>();
 		try {
-
-			fr = new FileReader(caminhoArquivo);
-			br = new BufferedReader(fr);
 			String sCurrentLine;
-			br = new BufferedReader(new FileReader(caminhoArquivo));
+			br = new BufferedReader(new FileReader(importacaoVO.getPathArquivo()));
 			StringTokenizer st;
 			int i = 0;
 			List<String> lista;
 			while ((sCurrentLine = br.readLine()) != null) {
-				st = new StringTokenizer(sCurrentLine, delimitador);
+				st = new StringTokenizer(sCurrentLine, importacaoVO.getDelimitador());
 				lista = new ArrayList<String>();
 				while (st.hasMoreElements()) {
 					lista.add((String) st.nextElement());

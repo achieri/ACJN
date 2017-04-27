@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-interface Importacao extends Serializable {
+import br.com.acjn.importacao.vo.ImportacaoVO;
 
-	public Map<Integer, List<String>> obtemDadosArquivo(String caminhoArquivo) throws Exception;
+public interface Importacao extends Serializable {
+
+	public Map<Integer, List<String>> obtemDadosArquivo(ImportacaoVO importacaoVO) throws Exception;
 
 }
