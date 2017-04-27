@@ -13,7 +13,7 @@ public class ImportacaoTXTTest {
 	@Test
 	public void testObtemDadosArquivo() throws ImportacaoException {
 
-		assertNotNull(imp.obtemDadosArquivo(""));
+		assertNotNull(imp.obtemDadosArquivo("xxx"));
 		// fail("Not yet implemented");
 	}
 
