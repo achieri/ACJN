@@ -4,12 +4,27 @@ import java.io.Serializable;
 
 import org.springframework.stereotype.Service;
 
+/**
+ * Parametros do arquivo de importacao
+ * 
+ * @author achie
+ *
+ */
 @Service
 public class ImportacaoVO implements Serializable {
 
 	private String delimitador;
 	private String qualificador;
 	private String pathArquivo;
+	private Boolean isCabecalho;
+
+	public Boolean getIsCabecalho() {
+		return isCabecalho;
+	}
+
+	public void setIsCabecalho(Boolean isCabecalho) {
+		this.isCabecalho = isCabecalho;
+	}
 
 	public String getDelimitador() {
 		return delimitador;

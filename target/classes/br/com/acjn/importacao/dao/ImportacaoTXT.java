@@ -1,4 +1,4 @@
-package br.com.acjn.importacao.business;
+package br.com.acjn.importacao.dao;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import br.com.acjn.importacao.business.Importacao;
 import br.com.acjn.importacao.exception.ImportacaoException;
 import br.com.acjn.importacao.vo.ImportacaoVO;
 
@@ -27,7 +27,7 @@ public class ImportacaoTXT implements Importacao {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Le linha por linha e transforma em tabela
+	 * Le linha por linha e transforma em tabela map
 	 * 
 	 * @throws ImportacaoException
 	 */
@@ -38,18 +38,21 @@ public class ImportacaoTXT implements Importacao {
 		try {
 			String sCurrentLine;
 			br = new BufferedReader(new FileReader(importacaoVO.getPathArquivo()));
-			StringTokenizer st;
 			int i = 0;
 			List<String> lista;
 			while ((sCurrentLine = br.readLine()) != null) {
-				st = new StringTokenizer(sCurrentLine, importacaoVO.getDelimitador());
+				sCurrentLine.replaceAll(importacaoVO.getDelimitador() + importacaoVO.getDelimitador(),
+						importacaoVO.getDelimitador() + " " + importacaoVO.getDelimitador());
+				String[] sTemp = sCurrentLine.split(importacaoVO.getDelimitador(), 0);
 				lista = new ArrayList<String>();
-				while (st.hasMoreElements()) {
-					lista.add((String) st.nextElement());
+				for (int j = 0; j < sTemp.length; j++) {
+					lista.add(sTemp[j]);
 				}
 				mapa.put(i++, lista);
 			}
-		} catch (IOException e) {
+		} catch (
+
+		IOException e) {
 			e.printStackTrace();
 			logger.log(Level.SEVERE, "Map<Integer, List<String>> obtemDadosArquivo(String caminhoArquivo)", e);
 			throw new ImportacaoException(e);
