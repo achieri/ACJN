@@ -46,7 +46,7 @@ public class ImportacaoTXT implements Importacao {
 				String[] sTemp = sCurrentLine.split(importacaoVO.getDelimitador(), 0);
 				lista = new ArrayList<String>();
 				for (int j = 0; j < sTemp.length; j++) {
-					lista.add(sTemp[j]);
+					lista.add(sTemp[j].trim());
 				}
 				mapa.put(i++, lista);
 			}
