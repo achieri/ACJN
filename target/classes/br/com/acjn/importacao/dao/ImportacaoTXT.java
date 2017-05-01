@@ -41,9 +41,9 @@ public class ImportacaoTXT implements Importacao {
 			int i = 0;
 			List<String> lista;
 			while ((sCurrentLine = br.readLine()) != null) {
-				sCurrentLine.replaceAll(importacaoVO.getDelimitador() + importacaoVO.getDelimitador(),
+				sCurrentLine = sCurrentLine.replaceAll(importacaoVO.getDelimitador() + importacaoVO.getDelimitador(),
 						importacaoVO.getDelimitador() + " " + importacaoVO.getDelimitador());
-				String[] sTemp = sCurrentLine.split(importacaoVO.getDelimitador(), 0);
+				String[] sTemp = sCurrentLine.split(importacaoVO.getDelimitador(), -1);
 				lista = new ArrayList<String>();
 				for (int j = 0; j < sTemp.length; j++) {
 					lista.add(sTemp[j].trim());
