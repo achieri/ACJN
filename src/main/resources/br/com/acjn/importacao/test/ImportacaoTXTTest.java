@@ -21,7 +21,7 @@ public class ImportacaoTXTTest {
 	@BeforeClass
 	public static void setup() {
 		importacaoVO.setDelimitador(";");
-		importacaoVO.setPathArquivo("src/main/resources/arquivos_importacao_teste/Exemplos_Mes_a_Mes.txt");
+		importacaoVO.setPathArquivo("src/main/resources/arquivos_importacao_teste/Exemplos_Intervalos1.txt");
 		importacaoVO.setIsCabecalho(true);
 	}
 

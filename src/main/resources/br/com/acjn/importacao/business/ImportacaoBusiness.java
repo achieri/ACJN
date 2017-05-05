@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 
 import br.com.acjn.importacao.exception.ImportacaoException;
 import br.com.acjn.importacao.vo.ImportacaoVO;
-import br.com.acjn.util.TipoDadosEnum;
 import br.com.acjn.util.StringUtils;
+import br.com.acjn.util.TipoDadosEnum;
 
 public class ImportacaoBusiness {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
@@ -101,7 +101,7 @@ public class ImportacaoBusiness {
 			for (int k = 0; k < listaCampos.size(); k++) {
 				TipoDadosEnum tipoTemp = StringUtils.obtemTipoCampo(listaCampos.get(k));
 				if (listaTipoCampo.get(k) != tipoTemp) {
-					listaRetorno.add("O campo esperado na linha " + j + " é " + listaTipoCampo.get(k).getValor()
+					listaRetorno.add("O campo esperado na coluna " + (k + 1) + " é " + listaTipoCampo.get(k).getValor()
 							+ " e o detectado na linha " + i + " foi " + tipoTemp.getValor());
 				}
 			}

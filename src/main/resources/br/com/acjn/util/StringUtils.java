@@ -264,6 +264,7 @@ public final class StringUtils {
 				}
 				try {
 					s = s.replaceAll("\\.", "").replaceAll(",", ".");
+					BigDecimal bigDecimal = new BigDecimal(s);
 					return TipoDadosEnum.DECIMAL_BR;
 				} catch (Exception e) {
 					logger.log(Level.INFO, "TipoDadosEnum adicionaTipoCampo(String s) TIPO DECIMAL_BR");
