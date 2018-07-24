@@ -1,0 +1,114 @@
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+public class Main {
+	private static Random rand = new Random();
+	private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	public static void main(String[] args) throws ParseException {
+		
+		List<String>listaNome = montaListaNomes();
+		Map<Date, Map<String,Ativo>> mapa = obtemMapaAtivos(listaNome);
+//		mapa.forEach((k,v) ->{
+//			System.out.println("chave - "+k+"- valor - "+v+"-");
+//			});
+		Calendar c = GregorianCalendar.getInstance();
+		c.add(Calendar.DAY_OF_MONTH, -1);
+		
+		// pesquisa
+		Double valorMedia = obtemMedia(obtemAtivosRetroativos(10, listaNome.get(5), mapa));
+		System.out.println(valorMedia);
+	}
+	
+	
+	
+	
+
+	private static Double obtemMedia(Map<Date, Ativo> mapa) {
+		return mapa.values().stream().collect(Collectors.summarizingDouble(Ativo::getValorFechamento)).getSum()/mapa.size();
+	}
+
+
+
+
+
+	private static Map<Date,Ativo> obtemAtivosRetroativos(int qtdDias, String nomeAtivo, Map<Date, Map<String,Ativo>> mapa) throws ParseException {
+		Map<Date,Ativo> map = new TreeMap<>();
+		Calendar c = GregorianCalendar.getInstance();
+		for(int i=0;i<qtdDias;i++) {
+			c.add(Calendar.DAY_OF_MONTH, -1);
+			Date data = sdf.parse(sdf.format(c.getTime()));
+			map.put(data,mapa.get(data).get(nomeAtivo));
+		}
+		return map;
+	}
+
+
+
+	private static List<String> montaListaNomes() {
+		List<String> lista = new ArrayList<>();
+		for(int i=0;i<40;i++) {
+			lista.add(String.valueOf((char)(rand.nextInt(200)+64)+(char)(rand.nextInt(200)+64)));
+		}
+		return lista;
+	}
+
+	private static Map<Date, Map<String,Ativo>> obtemMapaAtivos(List<String> listaNome) throws ParseException {
+		Ativo at = null;
+		SortedMap <Date, Map<String,Ativo>> mapa = new TreeMap<>();
+		
+		for(int i=0;i<40;i++) {
+			Map<String,Ativo> mapaAtivo = new HashMap<>();
+			Calendar c = GregorianCalendar.getInstance();
+			c.add(Calendar.DAY_OF_MONTH, -i);
+			for(int j=0;j<40;j++) {
+				at = new Ativo();
+				at.setValorFechamento(rand.nextDouble()*100);
+				at.setCodAtivo(listaNome.get(j));
+				mapaAtivo.put(listaNome.get(j), at);
+			}
+			mapa.put(sdf.parse(sdf.format(c.getTime())),mapaAtivo);
+		}
+		return mapa;
+	}
+
+	
+
+}
+class Ativo{
+//	private Date data;
+	private Double valorFechamento;
+	private String codAtivo;
+	
+	
+	public String getCodAtivo() {
+		return codAtivo;
+	}
+	public void setCodAtivo(String codAtivo) {
+		this.codAtivo = codAtivo;
+	}
+//	public Date getData() {
+//		return data;
+//	}
+//	public void setData(Date data) {
+//		this.data = data;
+//	}
+	public Double getValorFechamento() {
+		return valorFechamento;
+	}
+	public void setValorFechamento(Double valorFechamento) {
+		this.valorFechamento = valorFechamento;
+	}
+	
+	
+}
