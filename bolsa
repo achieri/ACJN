@@ -15,6 +15,20 @@ import java.util.stream.Collectors;
 public class Main {
 	private static Random rand = new Random();
 	private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	private static int[] listaValores = {50,15,20,30,50,78};
+	//private static Enum totalPeriodos
+//	private static int PERIODO_1H = 60/5;
+//	private static int PERIODO_1D = 24*60/5;
+	
+	public enum Periodos{
+		PERIODO_1H(60/5), PERIODO_1D(24*60/5);
+		
+		public int totalPeriodos;
+		Periodos(int periodos){
+			totalPeriodos = periodos;
+		}
+	}
+
 	public static void main(String[] args) throws ParseException {
 		
 		List<String>listaNome = montaListaNomes();
@@ -22,17 +36,44 @@ public class Main {
 //		mapa.forEach((k,v) ->{
 //			System.out.println("chave - "+k+"- valor - "+v+"-");
 //			});
-		Calendar c = GregorianCalendar.getInstance();
-		c.add(Calendar.DAY_OF_MONTH, -1);
+//		Calendar c = GregorianCalendar.getInstance();
+//		c.add(Calendar.DAY_OF_MONTH, -1);
 		
 		// pesquisa
-		Double valorMedia = obtemMedia(obtemAtivosRetroativos(10, listaNome.get(5), mapa));
-		System.out.println(valorMedia);
+		Double valorMedia = obtemMedia(obtemAtivosRetroativos(Periodos.PERIODO_1D.totalPeriodos, listaNome.get(0), mapa));
+		System.out.println("Media - "+valorMedia);
+		
+		Double desvioPadrao = obtemDesvioPadrao(valorMedia, mapa);
+		System.out.println("Desvio padrao - "+desvioPadrao);
 	}
 	
 	
 	
 	
+
+	private static Double obtemDesvioPadrao(Double valorMedia, Map<Date, Map<String, Ativo>> mapa) {
+		double[] desvioPadrao = {0};
+		mapa.entrySet().forEach(v -> v.getValue().entrySet().forEach(v1 ->{
+			desvioPadrao[0] +=Math.pow((v1.getValue().getValorFechamento() - valorMedia),2);
+//			System.out.println(desvioPadrao[0]);
+		}));
+//		Iterator<Map.Entry<Date, Map<String, Ativo>>> it = mapa.entrySet().iterator();
+//		while(it.hasNext()) {
+//			Entry<Date, Map<String, Ativo>> map2 = it.next();
+//			Iterator<Map.Entry<String, Ativo>> it2 = map2.getValue().entrySet().iterator();	
+//			while(it2.hasNext()) {
+//				Ativo atv = it2.next().getValue();
+//				desvioPadrao[0] +=Math.pow((atv.getValorFechamento() - valorMedia),2);
+//				System.out.println(atv.getValorFechamento()+"-"+Math.pow((atv.getValorFechamento() - valorMedia),2)+"-"+desvioPadrao[0]);
+//				System.out.println();
+//			}
+//		}
+		return Math.sqrt(desvioPadrao[0]/mapa.size());
+	}
+
+
+
+
 
 	private static Double obtemMedia(Map<Date, Ativo> mapa) {
 		return mapa.values().stream().collect(Collectors.summarizingDouble(Ativo::getValorFechamento)).getSum()/mapa.size();
@@ -44,9 +85,10 @@ public class Main {
 
 	private static Map<Date,Ativo> obtemAtivosRetroativos(int qtdDias, String nomeAtivo, Map<Date, Map<String,Ativo>> mapa) throws ParseException {
 		Map<Date,Ativo> map = new TreeMap<>();
-		Calendar c = GregorianCalendar.getInstance();
+		Calendar c = null;
 		for(int i=0;i<qtdDias;i++) {
-			c.add(Calendar.DAY_OF_MONTH, -1);
+			c = GregorianCalendar.getInstance();
+			c.add(Calendar.DAY_OF_MONTH, -i);
 			Date data = sdf.parse(sdf.format(c.getTime()));
 			map.put(data,mapa.get(data).get(nomeAtivo));
 		}
@@ -67,15 +109,15 @@ public class Main {
 		Ativo at = null;
 		SortedMap <Date, Map<String,Ativo>> mapa = new TreeMap<>();
 		
-		for(int i=0;i<40;i++) {
+		for(int i=0;i<listaValores.length;i++) {
 			Map<String,Ativo> mapaAtivo = new HashMap<>();
 			Calendar c = GregorianCalendar.getInstance();
 			c.add(Calendar.DAY_OF_MONTH, -i);
-			for(int j=0;j<40;j++) {
+			for(int j=0;j<1;j++) {
 				at = new Ativo();
-				at.setValorFechamento(rand.nextDouble()*100);
-				at.setCodAtivo(listaNome.get(j));
-				mapaAtivo.put(listaNome.get(j), at);
+				at.setValorFechamento(Double.valueOf(listaValores[i]));
+				at.setCodAtivo(listaNome.get(0));
+				mapaAtivo.put(listaNome.get(0), at);
 			}
 			mapa.put(sdf.parse(sdf.format(c.getTime())),mapaAtivo);
 		}
