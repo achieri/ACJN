@@ -1,4 +1,4 @@
-C:\Users\t1108dgf\desenvolvimento\eclipse-jee-oxygen-1a-win32-x86_64\eclipse.exe -vm "C:\Users\t1108dgf\desenvolvimento\openjdk-1.8.0.151-1.b12\bin"
+//C:\Users\t1108dgf\desenvolvimento\eclipse-jee-oxygen-1a-win32-x86_64\eclipse.exe -vm "C:\Users\t1108dgf\desenvolvimento\openjdk-1.8.0.151-1.b12\bin"
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,7 +51,7 @@ public class Main {
 		Double desvioPadrao = obtemDesvioPadrao(valorMedia, mapa);
 		System.out.println("Desvio padrao - "+desvioPadrao);
 		
-		obtemListaMaiorVariacao(mapa, Periodo.PERIODO_5M);
+		obtemListaMaiorVariacao(mapa, Periodo.PERIODO_TESTE);
 	}
 	
 	
@@ -65,15 +65,15 @@ public class Main {
 		Map<Date, Map<String, Ativo>> novoMapa = new HashMap<>(); 
 		Iterator<Map.Entry<Date, Map<String, Ativo>>> it = mapa.entrySet().iterator();
 		int counter =0;
-		Map<String, Ativo> mapaTemp = new TreeMap<>();
+		List <Ativo> mapaTemp = new ArrayList<>();
 		while(it.hasNext()) {
 			Entry<Date, Map<String, Ativo>> map2 = it.next();
 			if(++counter % p.totalPeriodos == 0 && counter > 1) {
-				Iterator<Map.Entry<String, Ativo>> it2 = mapaTemp.entrySet().iterator();
-				Double valorIncial  = mapaTemp.entrySet().stream().findFirst().get().getValue().getValorFechamento();
-				Map<String, Ativo> newMap = new TreeMap(Collections.reverseOrder());
-				newMap.putAll(mapaTemp);
-				Double valorFinal = mapaTemp.entrySet().stream().findFirst().get().getValue().getValorFechamento();
+//				Iterator<Map.Entry<String, Ativo>> it2 = mapaTemp.entrySet().iterator();
+				Double valorIncial  = mapaTemp.get(0).getValorFechamento();
+//				Map<String, Ativo> newMap = new TreeMap(Collections.reverseOrder());
+//				newMap.putAll(mapaTemp);
+				Double valorFinal = mapaTemp.get(mapaTemp.size()-1).getValorFechamento();
 				
 				System.out.println((valorIncial/valorFinal)*100);
 //				while(it2.hasNext()) {
@@ -84,7 +84,7 @@ public class Main {
 //				}
 			}else {
 				Ativo ativoTmp = map2.getValue().entrySet().stream().findFirst().get().getValue();
-				mapaTemp.put(ativoTmp.getCodAtivo(),ativoTmp);
+				mapaTemp.add(ativoTmp);
 			}
 			
 		}
@@ -136,6 +136,8 @@ public class Main {
 			c.add(Calendar.DAY_OF_MONTH, -i);
 			Date data = sdf.parse(sdf.format(c.getTime()));
 			map.put(data,mapa.get(data).get(nomeAtivo));
+			// TODO esta correto acima
+//			map.put(new Date(),mapa.get(data).get(nomeAtivo));
 		}
 		return map;
 	}
@@ -162,6 +164,7 @@ public class Main {
 				at = new Ativo();
 				at.setValorFechamento(Double.valueOf(listaValores[i]));
 				at.setCodAtivo(listaNome.get(0));
+				at.setData(c.getTime());
 				mapaAtivo.put(listaNome.get(0), at);
 			}
 			mapa.put(sdf.parse(sdf.format(c.getTime())),mapaAtivo);
@@ -176,7 +179,16 @@ class Ativo{
 	private Double taxaVariacao;
 	private Double valorFechamento;
 	private String codAtivo;
+	private Date data;
 	
+	
+	
+	public Date getData() {
+		return data;
+	}
+	public void setData(Date data) {
+		this.data = data;
+	}
 	public Double getTaxaVariacao() {
 		return taxaVariacao;
 	}
