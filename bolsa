@@ -2,11 +2,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -20,11 +23,11 @@ public class Main {
 //	private static int PERIODO_1H = 60/5;
 //	private static int PERIODO_1D = 24*60/5;
 	
-	public enum Periodos{
-		PERIODO_1H(60/5), PERIODO_1D(24*60/5);
+	public enum Periodo{
+		PERIODO_1H(60/5), PERIODO_1D(24*60/5),PERIODO_5M(1),PERIODO_TESTE(6) ;
 		
 		public int totalPeriodos;
-		Periodos(int periodos){
+		Periodo(int periodos){
 			totalPeriodos = periodos;
 		}
 	}
@@ -40,16 +43,56 @@ public class Main {
 //		c.add(Calendar.DAY_OF_MONTH, -1);
 		
 		// pesquisa
-		Double valorMedia = obtemMedia(obtemAtivosRetroativos(Periodos.PERIODO_1D.totalPeriodos, listaNome.get(0), mapa));
+		Double valorMedia = obtemMedia(obtemAtivosRetroativos(Periodo.PERIODO_TESTE, listaNome.get(0), mapa));
 		System.out.println("Media - "+valorMedia);
 		
 		Double desvioPadrao = obtemDesvioPadrao(valorMedia, mapa);
 		System.out.println("Desvio padrao - "+desvioPadrao);
+		
+		obtemListaMaiorVariacao(mapa, Periodo.PERIODO_5M);
 	}
 	
 	
+	private static List<Ativo> obtemListaMaiorVariacao(Map<Date, Map<String, Ativo>> mapa, Periodo p){
+		Map<Date, Map<String, Ativo>> novoMapa = obtemMapaPeriodos(mapa, p);
+		return new ArrayList<Ativo>();
+	}
 	
-	
+
+	private static Map<Date, Map<String, Ativo>> obtemMapaPeriodos(Map<Date, Map<String, Ativo>> mapa, Periodo p) {
+		Map<Date, Map<String, Ativo>> novoMapa = new HashMap<>(); 
+		Iterator<Map.Entry<Date, Map<String, Ativo>>> it = mapa.entrySet().iterator();
+		int counter =0;
+		Map<String, Ativo> mapaTemp = new TreeMap<>();
+		while(it.hasNext()) {
+			Entry<Date, Map<String, Ativo>> map2 = it.next();
+			if(++counter % p.totalPeriodos == 0 && counter > 1) {
+				Iterator<Map.Entry<String, Ativo>> it2 = mapaTemp.entrySet().iterator();
+				Double valorIncial  = mapaTemp.entrySet().stream().findFirst().get().getValue().getValorFechamento();
+				Map<String, Ativo> newMap = new TreeMap(Collections.reverseOrder());
+				newMap.putAll(mapaTemp);
+				Double valorFinal = mapaTemp.entrySet().stream().findFirst().get().getValue().getValorFechamento();
+				
+				System.out.println((valorIncial/valorFinal)*100);
+//				while(it2.hasNext()) {
+//					mapAtivosOld = it2.next();
+//					Map<String, Ativo> mapaAtivo = new HashMap<>();
+////					mapaAtivo.put(map2.getValue(), value)
+////					novoMapa.put(map2.getKey(), value)
+//				}
+			}else {
+				Ativo ativoTmp = map2.getValue().entrySet().stream().findFirst().get().getValue();
+				mapaTemp.put(ativoTmp.getCodAtivo(),ativoTmp);
+			}
+			
+		}
+		for(int i=0;i<mapa.size();i++) {
+			int totalBloco = (mapa.size()> i+p.totalPeriodos)?p.totalPeriodos:mapa.size() - (p.totalPeriodos-i);
+
+		}
+		return null;
+	}
+
 
 	private static Double obtemDesvioPadrao(Double valorMedia, Map<Date, Map<String, Ativo>> mapa) {
 		double[] desvioPadrao = {0};
@@ -83,10 +126,10 @@ public class Main {
 
 
 
-	private static Map<Date,Ativo> obtemAtivosRetroativos(int qtdDias, String nomeAtivo, Map<Date, Map<String,Ativo>> mapa) throws ParseException {
+	private static Map<Date,Ativo> obtemAtivosRetroativos(Periodo periodo, String nomeAtivo, Map<Date, Map<String,Ativo>> mapa) throws ParseException {
 		Map<Date,Ativo> map = new TreeMap<>();
 		Calendar c = null;
-		for(int i=0;i<qtdDias;i++) {
+		for(int i=0;i<periodo.totalPeriodos;i++) {
 			c = GregorianCalendar.getInstance();
 			c.add(Calendar.DAY_OF_MONTH, -i);
 			Date data = sdf.parse(sdf.format(c.getTime()));
@@ -128,23 +171,22 @@ public class Main {
 
 }
 class Ativo{
-//	private Date data;
+	private Double taxaVariacao;
 	private Double valorFechamento;
 	private String codAtivo;
 	
-	
+	public Double getTaxaVariacao() {
+		return taxaVariacao;
+	}
+	public void setTaxaVariacao(Double taxaVariacao) {
+		this.taxaVariacao = taxaVariacao;
+	}
 	public String getCodAtivo() {
 		return codAtivo;
 	}
 	public void setCodAtivo(String codAtivo) {
 		this.codAtivo = codAtivo;
 	}
-//	public Date getData() {
-//		return data;
-//	}
-//	public void setData(Date data) {
-//		this.data = data;
-//	}
 	public Double getValorFechamento() {
 		return valorFechamento;
 	}
