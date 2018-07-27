@@ -21,6 +21,7 @@ public class Main {
 	private static Random rand = new Random();
 	private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private static int[] listaValores = {50,15,20,30,50,78};
+	private static Date[] datas = new Date[6];
 	//private static Enum totalPeriodos
 //	private static int PERIODO_1H = 60/5;
 //	private static int PERIODO_1D = 24*60/5;
@@ -55,6 +56,34 @@ public class Main {
 	}
 	
 	
+	private static Map<Date, Map<String, Ativo>> obtemMapaAtivos(List<String> listaNome) {
+		Map<Date, Map<String, Ativo>> map = new TreeMap<>();
+		Calendar c = Calendar.getInstance();
+//		c.set(Calendar.MINUTE, i*5);
+		String nome = listaNome.get(0);
+//		Ativo atv = new Ativo(nome,c.getTime(),listaValores[i++] );
+		Map<String, Ativo> mapAtivo = new HashMap<>();
+//		mapAtivo.put(nome, atv);
+//		map.put(c.getTime(), mapAtivo);
+		for(int i=0;i<listaValores.length;i++){
+			populaLoop(i, c, nome, mapAtivo, map);
+		}
+//		map.put(c.getTime(), mapAtivo);
+		
+		return map;
+	}
+
+
+	private static void populaLoop(int i, Calendar c, String nome, Map<String, Ativo> mapAtivo, Map<Date, Map<String, Ativo>> map) {
+		Ativo atv;
+		c.set(Calendar.MINUTE, i*5);
+		atv = new Ativo(nome,c.getTime(),listaValores[i] );
+		mapAtivo.put(nome, atv);
+		map.put(c.getTime(), mapAtivo);
+		datas[i] =c.getTime(); 
+	}
+
+
 	private static List<Ativo> obtemListaMaiorVariacao(Map<Date, Map<String, Ativo>> mapa, Periodo p){
 		Map<Date, Map<String, Ativo>> novoMapa = obtemMapaPeriodos(mapa, p);
 		return new ArrayList<Ativo>();
@@ -121,7 +150,14 @@ public class Main {
 
 
 	private static Double obtemMedia(Map<Date, Ativo> mapa) {
-		return mapa.values().stream().collect(Collectors.summarizingDouble(Ativo::getValorFechamento)).getSum()/mapa.size();
+//		return mapa.values().stream().collect(Collectors.summarizingDouble(Ativo::getValorFechamento)).getSum()/mapa.size();
+		double valor = 0;
+		Iterator<Map.Entry<Date, Ativo>> it = mapa.entrySet().iterator();
+		while(it.hasNext()){
+			valor += it.next().getValue().getValorFechamento();
+		}
+		return new Double(valor)/mapa.size();
+		
 	}
 
 
@@ -132,10 +168,10 @@ public class Main {
 		Map<Date,Ativo> map = new TreeMap<>();
 		Calendar c = null;
 		for(int i=0;i<periodo.totalPeriodos;i++) {
-			c = GregorianCalendar.getInstance();
-			c.add(Calendar.DAY_OF_MONTH, -i);
-			Date data = sdf.parse(sdf.format(c.getTime()));
-			map.put(data,mapa.get(data).get(nomeAtivo));
+//			c = GregorianCalendar.getInstance();
+//			c.add(Calendar.DAY_OF_MONTH, -i);
+//			Date data = sdf.parse(sdf.format(c.getTime()));
+			map.put(datas[i],mapa.get(datas[i]).get(nomeAtivo));
 			// TODO esta correto acima
 //			map.put(new Date(),mapa.get(data).get(nomeAtivo));
 		}
@@ -152,25 +188,25 @@ public class Main {
 		return lista;
 	}
 
-	private static Map<Date, Map<String,Ativo>> obtemMapaAtivos(List<String> listaNome) throws ParseException {
-		Ativo at = null;
-		SortedMap <Date, Map<String,Ativo>> mapa = new TreeMap<>();
-		
-		for(int i=0;i<listaValores.length;i++) {
-			Map<String,Ativo> mapaAtivo = new HashMap<>();
-			Calendar c = GregorianCalendar.getInstance();
-			c.add(Calendar.DAY_OF_MONTH, -i);
-			for(int j=0;j<1;j++) {
-				at = new Ativo();
-				at.setValorFechamento(Double.valueOf(listaValores[i]));
-				at.setCodAtivo(listaNome.get(0));
-				at.setData(c.getTime());
-				mapaAtivo.put(listaNome.get(0), at);
-			}
-			mapa.put(sdf.parse(sdf.format(c.getTime())),mapaAtivo);
-		}
-		return mapa;
-	}
+//	private static Map<Date, Map<String,Ativo>> obtemMapaAtivos(List<String> listaNome) throws ParseException {
+//		Ativo at = null;
+//		SortedMap <Date, Map<String,Ativo>> mapa = new TreeMap<>();
+//		
+//		for(int i=0;i<listaValores.length;i++) {
+//			Map<String,Ativo> mapaAtivo = new HashMap<>();
+//			Calendar c = GregorianCalendar.getInstance();
+//			c.add(Calendar.DAY_OF_MONTH, -i);
+//			for(int j=0;j<1;j++) {
+//				at = new Ativo();
+//				at.setValorFechamento(Double.valueOf(listaValores[i]));
+//				at.setCodAtivo(listaNome.get(0));
+//				at.setData(c.getTime());
+//				mapaAtivo.put(listaNome.get(0), at);
+//			}
+//			mapa.put(sdf.parse(sdf.format(c.getTime())),mapaAtivo);
+//		}
+//		return mapa;
+//	}
 
 	
 
@@ -183,6 +219,11 @@ class Ativo{
 	
 	
 	
+	public Ativo(String nome, Date data, int valor) {
+		this.setCodAtivo(nome);
+		this.setData(data);
+		this.setValorFechamento(Double.valueOf(valor));
+	}
 	public Date getData() {
 		return data;
 	}
