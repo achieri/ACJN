@@ -26,12 +26,16 @@ create table movimento_diario_5M(
 )
 
 
-package br.com.acsystems.tests;
-
 //C:\Users\t1108dgf\desenvolvimento\eclipse-jee-oxygen-1a-win32-x86_64\eclipse.exe -vm "C:\Users\t1108dgf\desenvolvimento\openjdk-1.8.0.151-1.b12\bin"
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,9 +46,12 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
 
+
+
+
 public class Main {
 	private static Random rand = new Random();
-//	private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private static int[] listaValores = {50,15,20,30,50,78};
 	private static Date[] datas = new Date[6];
 	//private static Enum totalPeriodos
@@ -52,7 +59,7 @@ public class Main {
 //	private static int PERIODO_1D = 24*60/5;
 	
 	public enum Periodo{
-		PERIODO_1H(60/5), PERIODO_1D(24*60/5),PERIODO_5M(1),PERIODO_TESTE(2) ;
+		PERIODO_1H(60/5), PERIODO_1D(24*60/5),PERIODO_5M(1),PERIODO_TESTE(6) ;
 		
 		public int totalPeriodos;
 		Periodo(int periodos){
@@ -60,7 +67,7 @@ public class Main {
 		}
 	}
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws ParseException, FileNotFoundException, IOException {
 		
 		List<String>listaNome = montaListaNomes();
 		Map<Date, Map<String,Ativo>> mapa = obtemMapaAtivos(listaNome);
@@ -78,18 +85,96 @@ public class Main {
 		System.out.println("Desvio padrao - "+desvioPadrao);
 		
 		obtemListaMaiorVariacao(mapa, Periodo.PERIODO_TESTE);
+		String path="C:/tmp/bolsa/dados.txt";
+		Map<Integer,String> mapaErros = validaLeituraDados(path);
+		Map<Date,Map<String,Ativo>> mapaCarregado = carregaDadosArquivo(path, false, mapaErros);
+		
+		
 	}
 	
 	
+	private static Map<Integer,String> validaLeituraDados(String path) throws FileNotFoundException, IOException {
+		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+			String sCurrentLine;
+			String[] listaCabecalho = null;
+			String[] listaAtivos = null;
+			boolean primeiraLinha = true;
+			Map<Integer,String> mapaErros = new HashMap<>();
+			int i=0;
+			while ((sCurrentLine = br.readLine()) != null) {
+				i++;
+				if(primeiraLinha){
+					listaCabecalho = sCurrentLine.replace("\"", "").split(";",0);
+					primeiraLinha = false;
+					continue;
+				}
+				listaAtivos = sCurrentLine.split(";",0);
+				if(listaAtivos.length != listaCabecalho.length){
+					mapaErros.put(i,"Erro na linha - "+i+" tamanho diferente do cabecalho");
+				}
+			}
+			return mapaErros;
+		}
+		
+	}
+
+
+	private static Map<Date, Map<String, Ativo>> carregaDadosArquivo(String path, boolean isDataNow, Map<Integer, String> mapaErros) {
+		Map<Date,Map<String,Ativo>> mapa = new HashMap<>();
+		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+			String sCurrentLine;
+			boolean primeiraLinha = true;
+			String[] listaAtivos = null;
+			String[] listaCabecalho = null;
+			Map<String,Ativo> mapaAtivo = null;
+			Date data = Calendar.getInstance().getTime();
+			int j=0;
+			while ((sCurrentLine = br.readLine()) != null) {
+				if(primeiraLinha){
+					listaCabecalho = sCurrentLine.replace("\"", "").split(";",0);
+					primeiraLinha = false;
+					continue;
+				}
+				if(mapaErros.containsKey(j++)){
+					continue;
+				}
+				listaAtivos = sCurrentLine.split(";",0);
+				if(!isDataNow){
+					try {
+						data = sdf.parse(listaAtivos[0]);
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+				mapaAtivo = new HashMap<>();
+				for(int i=1;i<listaAtivos.length;i++){
+					mapaAtivo.put(listaCabecalho[0], new Ativo(listaCabecalho[i],data, new Double(listaAtivos[i])));
+				}
+				mapa.put(data, mapaAtivo);	
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return mapa;
+		
+	}
+
+
 	private static Map<Date, Map<String, Ativo>> obtemMapaAtivos(List<String> listaNome) {
-		Map<Date, Map<String, Ativo>> map = new TreeMap<Date, Map<String, Ativo>>();
+		Map<Date, Map<String, Ativo>> map = new TreeMap<>();
 		Calendar c = Calendar.getInstance();
+//		c.set(Calendar.MINUTE, i*5);
 		String nome = listaNome.get(0);
-		Map<String, Ativo> mapAtivo = null;
+//		Ativo atv = new Ativo(nome,c.getTime(),listaValores[i++] );
+		Map<String, Ativo> mapAtivo = new HashMap<>();
+//		mapAtivo.put(nome, atv);
+//		map.put(c.getTime(), mapAtivo);
 		for(int i=0;i<listaValores.length;i++){
-			mapAtivo = new HashMap<String, Ativo>();
 			populaLoop(i, c, nome, mapAtivo, map);
 		}
+//		map.put(c.getTime(), mapAtivo);
+		
 		return map;
 	}
 
@@ -111,36 +196,37 @@ public class Main {
 	
 
 	private static Map<Date, Map<String, Ativo>> obtemMapaPeriodos(Map<Date, Map<String, Ativo>> mapa, Periodo p) {
-		Map<Date, Map<String, Ativo>> novoMapa = new HashMap<Date, Map<String, Ativo>>(); 
+		Map<Date, Map<String, Ativo>> novoMapa = new HashMap<>(); 
 		Iterator<Map.Entry<Date, Map<String, Ativo>>> it = mapa.entrySet().iterator();
 		int counter =0;
-		List <Ativo> listTemp = new ArrayList<Ativo>();
-		Map<String, Ativo> mapaVariacao = new TreeMap<>();
+		List <Ativo> mapaTemp = new ArrayList<>();
 		while(it.hasNext()) {
 			Entry<Date, Map<String, Ativo>> map2 = it.next();
-			if(counter++ % p.totalPeriodos == 0 && counter > 1) {
-				populaVariacao(novoMapa, listTemp, mapaVariacao);
-				listTemp = new ArrayList<Ativo>();
+			if(++counter % p.totalPeriodos == 0 && counter > 1) {
+//				Iterator<Map.Entry<String, Ativo>> it2 = mapaTemp.entrySet().iterator();
+				Double valorIncial  = mapaTemp.get(0).getValorFechamento();
+//				Map<String, Ativo> newMap = new TreeMap(Collections.reverseOrder());
+//				newMap.putAll(mapaTemp);
+				Double valorFinal = mapaTemp.get(mapaTemp.size()-1).getValorFechamento();
+				
+				System.out.println((valorIncial/valorFinal)*100);
+//				while(it2.hasNext()) {
+//					mapAtivosOld = it2.next();
+//					Map<String, Ativo> mapaAtivo = new HashMap<>();
+////					mapaAtivo.put(map2.getValue(), value)
+////					novoMapa.put(map2.getKey(), value)
+//				}
+			}else {
+				Ativo ativoTmp = map2.getValue().entrySet().stream().findFirst().get().getValue();
+				mapaTemp.add(ativoTmp);
 			}
-			Ativo ativoTmp = map2.getValue().entrySet().stream().findFirst().get().getValue();
-			listTemp.add(ativoTmp);
+			
 		}
-		populaVariacao(novoMapa, listTemp, mapaVariacao);
-		return novoMapa;
-	}
+		for(int i=0;i<mapa.size();i++) {
+			int totalBloco = (mapa.size()> i+p.totalPeriodos)?p.totalPeriodos:mapa.size() - (p.totalPeriodos-i);
 
-
-	private static void populaVariacao(Map<Date, Map<String, Ativo>> novoMapa, List<Ativo> listTemp,
-			Map<String, Ativo> mapaVariacao) {
-		boolean isValorFinalMenor =listTemp.get(0).getValorFechamento()>=listTemp.get(listTemp.size()-1).getValorFechamento();
-		Double valorPrimeiro  = isValorFinalMenor?listTemp.get(listTemp.size()-1).getValorFechamento():listTemp.get(0).getValorFechamento();
-		Ativo valorSegundo = !isValorFinalMenor?listTemp.get(listTemp.size()-1):listTemp.get(0);
-		Double valorFinal = valorSegundo.getValorFechamento();
-		double resultado = (valorPrimeiro/valorFinal)*100 *(!isValorFinalMenor?1:-1);
-		System.out.println("Variacao - "+resultado);
-		valorSegundo.setTaxaVariacao(resultado);
-		mapaVariacao.put(valorSegundo.getCodAtivo(), valorSegundo);
-		novoMapa.put(valorSegundo.getData(),mapaVariacao);
+		}
+		return null;
 	}
 
 
@@ -238,7 +324,7 @@ class Ativo{
 	
 	
 	
-	public Ativo(String nome, Date data, int valor) {
+	public Ativo(String nome, Date data, double valor) {
 		this.setCodAtivo(nome);
 		this.setData(data);
 		this.setValorFechamento(Double.valueOf(valor));
