@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 
 
@@ -88,11 +88,34 @@ public class Main {
 		String path="C:/tmp/bolsa/dados.txt";
 		Map<Integer,String> mapaErros = validaLeituraDados(path);
 		Map<Date,Map<String,Ativo>> mapaCarregado = carregaDadosArquivo(path, false, mapaErros);
+		List<Alarme> listAlarme = populaAlarmes();
+		disparaAlarme(listAlarme);
 		
 		
 	}
+
+
+	private static void disparaAlarme(List<Alarme> listAlarme) {
+		listAlarme.stream()
+			.filter(x ->"XX9".equals(x.getAtivo()) 
+					&& x.getUltimoEnvio() == null || (x.getIntervaloReenvio()* 1000*60)>= System.currentTimeMillis() - x.getUltimoEnvio().getTime()
+					&& x.getValidade().getTime() > System.currentTimeMillis()
+					)
+			.collect(Collectors.toList()).forEach(x-> System.out.println("dispara"+x));
+	}
 	
 	
+	private static List<Alarme> populaAlarmes() {
+		List<Alarme> lista = new ArrayList<>();
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DAY_OF_MONTH, -1);
+		for(int i=0;i<10;i++){
+			lista.add(new Alarme(i,(c.getTime()),"XX-"+i,Double.parseDouble("10"),1,">=",24*60*60*1000));
+		}
+		return lista;
+	}
+
+
 	private static Map<Integer,String> validaLeituraDados(String path) throws FileNotFoundException, IOException {
 		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
 			String sCurrentLine;
@@ -353,6 +376,81 @@ class Ativo{
 	public void setValorFechamento(Double valorFechamento) {
 		this.valorFechamento = valorFechamento;
 	}
+}
 	
-	
+class Alarme{
+//		id numeric(2) not null
+//		,validade date  
+//		,codigo_ativo varchar(15) not null 
+//		,valor numeric(5,2) not null
+//		,total_notificacoes int not null
+//		,sinal varchar(2) not null
+//		,ultimo_alarme date not null
+//		,intervalo_reenvio numeric(2,0) not null
+		private Integer id;
+		private Date validade;
+		private String ativo;
+		private Double valor;
+		private Integer totalNotificacoes;
+		private String sinal;
+		private Date ultimoEnvio;
+		private Integer intervaloReenvio;
+		public Alarme(int id, Date validade, String ativo, Double valor, int totalNotificacoes
+				, String sinal, int intervaloReenvio){
+			this.ativo = ativo;
+			this.id = id;
+			this.intervaloReenvio = intervaloReenvio;
+			this.sinal = sinal;
+			this.totalNotificacoes = totalNotificacoes;
+			this.validade = validade;
+			this.valor = valor;
+		}
+		public Integer getId() {
+			return id;
+		}
+		public void setId(Integer id) {
+			this.id = id;
+		}
+		public Date getValidade() {
+			return validade;
+		}
+		public void setValidade(Date validade) {
+			this.validade = validade;
+		}
+		public String getAtivo() {
+			return ativo;
+		}
+		public void setAtivo(String ativo) {
+			this.ativo = ativo;
+		}
+		public Double getValor() {
+			return valor;
+		}
+		public void setValor(Double valor) {
+			this.valor = valor;
+		}
+		public Integer getTotalNotificacoes() {
+			return totalNotificacoes;
+		}
+		public void setTotalNotificacoes(Integer totalNotificacoes) {
+			this.totalNotificacoes = totalNotificacoes;
+		}
+		public String getSinal() {
+			return sinal;
+		}
+		public void setSinal(String sinal) {
+			this.sinal = sinal;
+		}
+		public Date getUltimoEnvio() {
+			return ultimoEnvio;
+		}
+		public void setUltimoEnvio(Date ultimoEnvio) {
+			this.ultimoEnvio = ultimoEnvio;
+		}
+		public Integer getIntervaloReenvio() {
+			return intervaloReenvio;
+		}
+		public void setIntervaloReenvio(Integer intervaloReenvio) {
+			this.intervaloReenvio = intervaloReenvio;
+		}
 }
