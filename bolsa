@@ -7,8 +7,11 @@ create table alarme(
 ,codigo_ativo varchar(15) not null 
 ,valor numeric(5,2) not null
 ,total_notificacoes int not null
+,sinal varchar(3) not null
+,ultimo_envio date not null
+,intervalo_reenvio numeric(3,0) not null
 ,PRIMARY KEY(id,codigo_ativo  )
-)
+);
 
 
 create table movimento_diario(
