@@ -28,6 +28,30 @@ create table movimento_diario_5M(
 ,PRIMARY KEY(dia_fechamento,codigo_ativo  )
 )
 
+//////////////////////////////transfer file////////////////////////////
+String encoded = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get("C:/tmp/bolsa/teste/dados.7z")));
+
+		File targetFile = new File("C:/tmp/bolsa/teste/stringZip.txt");
+	    OutputStream outStream = new FileOutputStream(targetFile);
+	    outStream.write(encoded.getBytes());
+	    outStream.close();
+		//////////////////////////////////////////////
+	    
+	    File file = new File("C:/tmp/bolsa/teste/stringZip2.txt");
+	    byte[] bytesArray = new byte[(int) file.length()];
+	    
+	    FileInputStream fis = new FileInputStream(file);
+	    fis.read(bytesArray); //read file into bytes[]
+	    fis.close();
+	    
+	    /////////////////////////////////////
+		
+		// decode a String
+		byte [] barr = Base64.getDecoder().decode(bytesArray); 
+		
+		FileUtils.writeByteArrayToFile(new File("C:/tmp/bolsa/teste/libOUT.7z"), barr);
+////////////////////////////////////////////////////////////////////////////		
+
 private static void enviarEmail() {
 		Properties props = new Properties();
         /** Parâmetros de conexão com servidor Gmail */
